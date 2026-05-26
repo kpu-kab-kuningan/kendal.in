@@ -169,11 +169,21 @@ function enterApp(role) {
     document.getElementById("user-display-role").textContent = (role === 'pegawai') ? currentUser.sub_bagian : "Operator SPIP Kantor";
     document.getElementById("user-initial").textContent = currentUser.nama.charAt(0);
 
+    // --- LOGIKA HAK AKSES MENU (UI) ---
+    const btnMonitoring = document.getElementById("menu-monitoring");
+
     if (role === 'operator') {
-        document.getElementById("menu-monitoring").classList.remove("d-none");
-        switchMenu('monitoring');
+        // Operator SPIP: Bisa melihat menu Monitoring
+        if (btnMonitoring) btnMonitoring.classList.remove("d-none");
+        
+        // Arahkan otomatis ke halaman Monitoring saat login
+        switchMenu('monitoring'); 
     } else {
-        switchMenu('dashboard');
+        // Pegawai/User: Sembunyikan menu Monitoring secara paksa
+        if (btnMonitoring) btnMonitoring.classList.add("d-none");
+        
+        // Arahkan otomatis ke halaman Dashboard Utama saat login
+        switchMenu('dashboard'); 
     }
 }
 
@@ -185,18 +195,36 @@ function handleLogout() {
 }
 
 function switchMenu(menu) {
+    // --- PROTEKSI KEAMANAN (LAPIS KEDUA) ---
+    if (menu === 'monitoring' && currentRole !== 'operator') {
+        alert("Akses Ditolak: Hanya Operator SPIP yang diizinkan mengakses Panel Monitoring.");
+        return; // Hentikan eksekusi, jangan pindah halaman
+    }
+
     activeMenu = menu;
-    document.getElementById("menu-dashboard").classList.remove("active");
-    document.getElementById("menu-monitoring").classList.remove("active");
     
+    // Reset status aktif (warna) pada tombol menu sidebar
+    const btnDashboard = document.getElementById("menu-dashboard");
+    const btnMonitoring = document.getElementById("menu-monitoring");
+    
+    if (btnDashboard) btnDashboard.classList.remove("active");
+    if (btnMonitoring) btnMonitoring.classList.remove("active");
+    
+    // Sembunyikan semua halaman terlebih dahulu
     document.getElementById("view-user-dashboard").classList.add("d-none");
     document.getElementById("view-operator-dashboard").classList.add("d-none");
 
+    // Tampilkan halaman yang sesuai
     if (menu === 'dashboard') {
-        document.getElementById("menu-dashboard").classList.add("active");
+        if (btnDashboard) btnDashboard.classList.add("active");
+        
+        // Halaman Dashboard Utama ini bisa diakses oleh Pegawai DAN Operator
         document.getElementById("view-user-dashboard").classList.remove("d-none");
+        
     } else if (menu === 'monitoring') {
-        document.getElementById("menu-monitoring").classList.add("active");
+        if (btnMonitoring) btnMonitoring.classList.add("active");
+        
+        // Halaman ini khusus Operator (sudah diproteksi di baris paling atas)
         document.getElementById("view-operator-dashboard").classList.remove("d-none");
         loadMonitoringData();
     }
