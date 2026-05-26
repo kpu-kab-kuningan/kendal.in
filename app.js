@@ -233,37 +233,41 @@ function switchMenu(menu) {
 function renderUserCategoryCards() {
     const container = document.getElementById("categories-container");
     if(!container) return;
+    
+    // --- KUNCI UTAMA FIX LAYOUT ---
+    // Kita paksa container utama menjadi block agar setiap sub-bagian 
+    // otomatis membuat baris baru ke bawah (tidak dipaksa sejajar ke samping)
+    container.style.display = "block";
     container.innerHTML = "";
 
-    // 1. Definisikan struktur Pemetaan Sub-Bagian beserta ID Kategori di dalamnya
+    // 1. Struktur Pemetaan Sub-Bagian
     const dataSubBagian = [
         {
             nama: "Sub-Bagian Partisipasi, Hubungan Masyarakat, dan SDM",
-            warnaAksen: "border-primary", // Aksen warna biru
+            warnaAksen: "border-primary", // Biru
             badgeColor: "bg-primary-subtle text-primary",
             kategoriIds: [1]
         },
         {
             nama: "Sub-Bagian Keuangan, Umum, dan Logistik",
-            warnaAksen: "border-warning", // Aksen warna kuning hangat
+            warnaAksen: "border-warning", // Kuning
             badgeColor: "bg-warning-subtle text-dark",
             kategoriIds: [2, 3, 4, 5, 6, 7]
         },
         {
             nama: "Sub-Bagian Perencanaan, Data, dan Informasi",
-            warnaAksen: "border-info", // Aksen warna cyan/biru muda
+            warnaAksen: "border-info", // Cyan/Biru Muda
             badgeColor: "bg-info-subtle text-info",
             kategoriIds: [8]
         }
     ];
 
-    // 2. Loop setiap Sub-Bagian untuk dibuatkan blok penampung tersendiri
+    // 2. Loop setiap Sub-Bagian (Baris demi Baris)
     dataSubBagian.forEach(sub => {
-        // Buat elemen pembungkus untuk satu kelompok Sub-Bagian
         const subSectionWrapper = document.createElement("div");
-        subSectionWrapper.className = "col-12 mb-5"; // Memberikan jarak vertikal antar kelompok agar lega
+        subSectionWrapper.className = "mb-5 w-100"; // w-100 memastikan memakan lebar penuh baris
 
-        // Kerangka judul Sub-Bagian dengan style modern (Garis Samping Tebal)
+        // Desain Judul Sub-Bagian dengan Garis Samping Kiri (Aksen Modern)
         let htmlContent = `
             <div class="d-flex align-items-center mb-3 border-start border-4 ${sub.warnaAksen} ps-3">
                 <h5 class="fw-bold text-dark mb-0 text-uppercase tracking-wide" style="font-size: 0.9rem; letter-spacing: 0.5px;">
@@ -276,13 +280,13 @@ function renderUserCategoryCards() {
             <div class="row g-3">
         `;
 
-        // 3. Ambil data kategori yang terdaftar di sub-bagian ini dan cetak card-nya
+        // 3. Loop untuk mencetak Card internal di bawah Sub-Bagian terkait
         sub.kategoriIds.forEach(idCat => {
             const kat = MASTER_KATEGORI.find(k => k.id === idCat);
             if (kat) {
                 const countRincian = MASTER_RINCIAN_KARTU.filter(r => r.kategori_id === kat.id).length;
                 
-                // Menghasilkan kolom bootstrap agar card otomatis responsif berjajar ke samping
+                // Card dimasukkan ke dalam col-md-6 atau col-lg-4 agar horizontal di dalam baris sub-bagiannya
                 htmlContent += `
                     <div class="col-12 col-md-6 col-lg-4">
                         <div class="category-card h-100 mb-0 shadow-sm border" onclick="openUploadModal(${kat.id})" style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;">
@@ -297,7 +301,7 @@ function renderUserCategoryCards() {
             }
         });
 
-        htmlContent += `</div>`; // Tutup tag row
+        htmlContent += `</div>`; // Tutup tag row internal berkas
         subSectionWrapper.innerHTML = htmlContent;
         container.appendChild(subSectionWrapper);
     });
