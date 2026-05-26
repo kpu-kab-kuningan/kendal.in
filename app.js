@@ -235,18 +235,71 @@ function renderUserCategoryCards() {
     if(!container) return;
     container.innerHTML = "";
 
-    MASTER_KATEGORI.forEach((kat) => {
-        const countRincian = MASTER_RINCIAN_KARTU.filter(r => r.kategori_id === kat.id).length;
-        const card = document.createElement("div");
-        card.className = "category-card";
-        card.onclick = () => openUploadModal(kat.id);
-        
-        card.innerHTML = `
-            <div class="category-icon-box"><i class="bi bi-folder2-open"></i></div>
-            <div class="category-title">${kat.nama}</div>
-            <span class="category-badge">${countRincian} Komponen Berkas</span>
+    // 1. Definisikan struktur Pemetaan Sub-Bagian beserta ID Kategori di dalamnya
+    const dataSubBagian = [
+        {
+            nama: "Sub-Bagian Partisipasi, Hubungan Masyarakat, dan SDM",
+            warnaAksen: "border-primary", // Aksen warna biru
+            badgeColor: "bg-primary-subtle text-primary",
+            kategoriIds: [1]
+        },
+        {
+            nama: "Sub-Bagian Keuangan, Umum, dan Logistik",
+            warnaAksen: "border-warning", // Aksen warna kuning hangat
+            badgeColor: "bg-warning-subtle text-dark",
+            kategoriIds: [2, 3, 4, 5, 6, 7]
+        },
+        {
+            nama: "Sub-Bagian Perencanaan, Data, dan Informasi",
+            warnaAksen: "border-info", // Aksen warna cyan/biru muda
+            badgeColor: "bg-info-subtle text-info",
+            kategoriIds: [8]
+        }
+    ];
+
+    // 2. Loop setiap Sub-Bagian untuk dibuatkan blok penampung tersendiri
+    dataSubBagian.forEach(sub => {
+        // Buat elemen pembungkus untuk satu kelompok Sub-Bagian
+        const subSectionWrapper = document.createElement("div");
+        subSectionWrapper.className = "col-12 mb-5"; // Memberikan jarak vertikal antar kelompok agar lega
+
+        // Kerangka judul Sub-Bagian dengan style modern (Garis Samping Tebal)
+        let htmlContent = `
+            <div class="d-flex align-items-center mb-3 border-start border-4 ${sub.warnaAksen} ps-3">
+                <h5 class="fw-bold text-dark mb-0 text-uppercase tracking-wide" style="font-size: 0.9rem; letter-spacing: 0.5px;">
+                    ${sub.nama}
+                </h5>
+                <span class="badge ${sub.badgeColor} ms-2 rounded-pill shadow-sm" style="font-size: 0.7rem; font-weight: 600;">
+                    ${sub.kategoriIds.length} Kategori
+                </span>
+            </div>
+            <div class="row g-3">
         `;
-        container.appendChild(card);
+
+        // 3. Ambil data kategori yang terdaftar di sub-bagian ini dan cetak card-nya
+        sub.kategoriIds.forEach(idCat => {
+            const kat = MASTER_KATEGORI.find(k => k.id === idCat);
+            if (kat) {
+                const countRincian = MASTER_RINCIAN_KARTU.filter(r => r.kategori_id === kat.id).length;
+                
+                // Menghasilkan kolom bootstrap agar card otomatis responsif berjajar ke samping
+                htmlContent += `
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="category-card h-100 mb-0 shadow-sm border" onclick="openUploadModal(${kat.id})" style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div class="category-icon-box mb-2"><i class="bi bi-folder2-open"></i></div>
+                                <div class="category-title fw-bold text-dark lh-base" style="font-size: 0.85rem; min-height: 40px;">${kat.nama}</div>
+                            </div>
+                            <span class="category-badge mt-3 align-self-start">${countRincian} Komponen Berkas</span>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        htmlContent += `</div>`; // Tutup tag row
+        subSectionWrapper.innerHTML = htmlContent;
+        container.appendChild(subSectionWrapper);
     });
 }
 
