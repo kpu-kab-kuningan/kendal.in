@@ -442,15 +442,21 @@ function submitReportForm(e) {
     const catatan = document.getElementById("form-catatan").value;
     const fileInput = document.getElementById("form-file-input").files[0];
 
-    // --- TAMBAHAN SATPAM VALIDASI PDF ---
+    // --- TAMBAHAN SATPAM VALIDASI PDF (VERSI SWEETALERT) ---
     if (status === "Ada" && fileInput) {
-        // Jika tipe file bukan PDF, tolak dan hentikan proses!
+        // Jika tipe file bukan PDF, tolak dan tampilkan pop-up keren!
         if (fileInput.type !== "application/pdf") {
-            alert("Gagal: Hanya dokumen berformat PDF yang diperbolehkan!");
-            return; // Hentikan eksekusi kode di bawahnya
+            Swal.fire({
+                icon: 'error',
+                title: 'Format Ditolak!',
+                text: 'Hanya dokumen berformat PDF yang diperbolehkan untuk menjaga kerapian arsip.',
+                confirmButtonColor: '#0d6efd', // Warna biru khas Bootstrap
+                confirmButtonText: 'Mengerti'
+            });
+            return; // Hentikan eksekusi
         }
     }
-    // ------------------------------------
+    // ------------------------------------   
 
     submitBtn.disabled = true;
     submitBtn.textContent = "Mengirim Berkas...";
@@ -490,6 +496,31 @@ function submitReportForm(e) {
     }
 }
 
+// function sendDataToBackend(payload) {
+//     fetch(GAS_API_URL, {
+//         method: "POST",
+//         mode: "cors",
+//         body: JSON.stringify(payload),
+//         headers: { "Content-Type": "text/plain;charset=utf-8" }
+//     })
+//     .then(res => res.json())
+//     .then(data => {
+//         if(data.status === "success") {
+//             alert("Sukses! Berkas berhasil disimpan dan disinkronkan ke dalam spreadsheet & Google Drive.");
+//             finalizeFormSubmit();
+//             fetchRealLogsFromServer(); 
+//         } else {
+//             alert("Error Backend: " + data.message);
+//             resetSubmitBtn();
+//         }
+//     })
+//     .catch(err => {
+//         console.error(err);
+//         alert("Gagal terhubung dengan backend Apps Script.");
+//         resetSubmitBtn();
+//     });
+// }
+
 function sendDataToBackend(payload) {
     fetch(GAS_API_URL, {
         method: "POST",
@@ -500,17 +531,46 @@ function sendDataToBackend(payload) {
     .then(res => res.json())
     .then(data => {
         if(data.status === "success") {
-            alert("Sukses! Berkas berhasil disimpan dan disinkronkan ke dalam spreadsheet & Google Drive.");
+            
+            // --- LETAKKAN SWEETALERT SUCCESS DI SINI ---
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Berkas berhasil disimpan dan disinkronkan ke Google Drive.',
+                confirmButtonColor: '#198754', 
+                timer: 2500, 
+                showConfirmButton: false 
+            });
+            // -------------------------------------------
+            
             finalizeFormSubmit();
             fetchRealLogsFromServer(); 
         } else {
-            alert("Error Backend: " + data.message);
+            
+            // --- SWEETALERT UNTUK ERROR BACKEND ---
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menyimpan',
+                text: "Error Backend: " + data.message,
+                confirmButtonColor: '#dc3545'
+            });
+            // --------------------------------------
+            
             resetSubmitBtn();
         }
     })
     .catch(err => {
         console.error(err);
-        alert("Gagal terhubung dengan backend Apps Script.");
+        
+        // --- SWEETALERT UNTUK ERROR JARINGAN ---
+        Swal.fire({
+            icon: 'error',
+            title: 'Koneksi Terputus',
+            text: 'Gagal terhubung dengan server Apps Script. Silakan periksa jaringan Anda.',
+            confirmButtonColor: '#dc3545'
+        });
+        // ---------------------------------------
+        
         resetSubmitBtn();
     });
 }
