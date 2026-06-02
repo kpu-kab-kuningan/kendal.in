@@ -442,6 +442,16 @@ function submitReportForm(e) {
     const catatan = document.getElementById("form-catatan").value;
     const fileInput = document.getElementById("form-file-input").files[0];
 
+    // --- TAMBAHAN SATPAM VALIDASI PDF ---
+    if (status === "Ada" && fileInput) {
+        // Jika tipe file bukan PDF, tolak dan hentikan proses!
+        if (fileInput.type !== "application/pdf") {
+            alert("Gagal: Hanya dokumen berformat PDF yang diperbolehkan!");
+            return; // Hentikan eksekusi kode di bawahnya
+        }
+    }
+    // ------------------------------------
+
     submitBtn.disabled = true;
     submitBtn.textContent = "Mengirim Berkas...";
 
