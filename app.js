@@ -630,7 +630,7 @@ function loadMonitoringData() {
             
 cellAksi = `
     <div class="d-flex justify-content-center gap-1">
-        ${matchLog.status_laporan === 'Ada' ? `<a href="${matchLog.link_google_drive}" target="_blank" class="btn btn-sm btn-light border" title="Buka File"><i class="bi bi-eye text-primary"></i></a>` : ''}
+        ${matchLog.status_laporan === 'Ada' ? `<button onclick="bukaBerkasDariLog('${matchLog.id_upload}')" class="btn btn-sm btn-light border" title="Buka File"><i class="bi bi-eye text-primary"></i></button>` : ''}
         
         ${matchLog.status_acc !== 'Disetujui' ? `
         <button class="btn btn-sm btn-light border" onclick="updateAccStatus('${matchLog.id_upload}', 'Disetujui')" title="Setujui">
@@ -660,6 +660,41 @@ cellAksi = `
         `;
         tbody.appendChild(row);
     });
+}
+
+/**
+ * FUNGSI UNTUK MEMBUKA BERKAS DENGAN PENGECEKAN CATATAN
+ */
+function bukaBerkasDariLog(idUpload) {
+    // 1. Cari data log di memori frontend berdasarkan ID Upload yang diklik
+    const logData = transaksiUploadLogs.find(log => log.id_upload === idUpload);
+    
+    if (!logData) return; // Jaga-jaga jika data tidak ditemukan
+
+    const link = logData.link_google_drive;
+    const catatan = logData.catatan_tambahan;
+
+    // 2. Pengecekan: Apakah ada catatan? (Tidak kosong dan bukan sekadar strip "-")
+    if (catatan && catatan.trim() !== "" && catatan.trim() !== "-") {
+        
+        // Jika ADA catatan, munculkan pop-up SweetAlert!
+        Swal.fire({
+            title: 'Catatan Pengunggah',
+            text: catatan,
+            icon: 'info',
+            confirmButtonColor: '#0d6efd', // Biru primary
+            confirmButtonText: '<i class="bi bi-box-arrow-up-right me-1"></i> Buka File'
+        }).then((result) => {
+            // Jika admin mengeklik tombol "Buka File" di dalam pop-up
+            if (result.isConfirmed) {
+                window.open(link, '_blank'); // Buka link Drive di tab baru
+            }
+        });
+
+    } else {
+        // 3. Jika TIDAK ADA catatan, langsung buka file tanpa basa-basi
+        window.open(link, '_blank');
+    }
 }
 
 function updateAccStatus(idUpload, newStatus) {
