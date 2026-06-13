@@ -628,9 +628,39 @@ function loadMonitoringData() {
 
             cellVerifikasi = `<span class="badge-modern ${badgeAccClass}">${matchLog.status_acc}</span>`;
             
+// 1. Cek apakah dokumen ini memiliki catatan dari pengunggah
+const hasCatatan = matchLog.catatan_tambahan && matchLog.catatan_tambahan.trim() !== "" && matchLog.catatan_tambahan.trim() !== "-";
+
+// 2. Siapkan wadah untuk elemen HTML Tombol Mata
+let btnMataHtml = '';
+
+// 3. Rancang tombol mata berdasarkan status laporan dan keberadaan catatan
+if (matchLog.status_laporan === 'Ada') {
+    if (hasCatatan) {
+        // Tombol Mata DENGAN Notifikasi Merah (!)
+        btnMataHtml = `
+            <button onclick="bukaBerkasDariLog('${matchLog.id_upload}')" class="btn btn-sm btn-light border position-relative" title="Ada Catatan! Buka File">
+                <i class="bi bi-eye text-primary"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.55rem; padding: 0.25em 0.4em; border: 1.5px solid white;">
+                    !
+                </span>
+            </button>
+        `;
+    } else {
+        // Tombol Mata BIASA
+        btnMataHtml = `
+            <button onclick="bukaBerkasDariLog('${matchLog.id_upload}')" class="btn btn-sm btn-light border" title="Buka File">
+                <i class="bi bi-eye text-primary"></i>
+            </button>
+        `;
+    }
+}
+
+// 4. Masukkan btnMataHtml ke dalam kerangka cellAksi utama
 cellAksi = `
     <div class="d-flex justify-content-center gap-1">
-        ${matchLog.status_laporan === 'Ada' ? `<button onclick="bukaBerkasDariLog('${matchLog.id_upload}')" class="btn btn-sm btn-light border" title="Buka File"><i class="bi bi-eye text-primary"></i></button>` : ''}
+        
+        ${btnMataHtml}
         
         ${matchLog.status_acc !== 'Disetujui' ? `
         <button class="btn btn-sm btn-light border" onclick="updateAccStatus('${matchLog.id_upload}', 'Disetujui')" title="Setujui">
