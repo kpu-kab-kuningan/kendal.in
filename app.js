@@ -162,8 +162,13 @@ function handleLogin(e) {
 }
 
 function enterApp(role) {
+    // Sembunyikan layar login
     document.getElementById("login-screen").classList.add("d-none");
-    document.getElementById("main-app").classList.remove("d-none");
+    
+    // Panggil layar utama, lalu suntikkan animasi slide-up yang elegan
+    const mainApp = document.getElementById("main-app");
+    mainApp.classList.remove("d-none");
+    mainApp.classList.add("slide-up-smooth");
     
     document.getElementById("user-display-name").textContent = currentUser.nama;
     document.getElementById("user-display-role").textContent = (role === 'pegawai') ? currentUser.sub_bagian : "Operator SPIP Kantor";
@@ -173,16 +178,10 @@ function enterApp(role) {
     const btnMonitoring = document.getElementById("menu-monitoring");
 
     if (role === 'operator') {
-        // Operator SPIP: Bisa melihat menu Monitoring
         if (btnMonitoring) btnMonitoring.classList.remove("d-none");
-        
-        // Arahkan otomatis ke halaman Monitoring saat login
         switchMenu('monitoring'); 
     } else {
-        // Pegawai/User: Sembunyikan menu Monitoring secara paksa
         if (btnMonitoring) btnMonitoring.classList.add("d-none");
-        
-        // Arahkan otomatis ke halaman Dashboard Utama saat login
         switchMenu('dashboard'); 
     }
 }
@@ -190,8 +189,16 @@ function enterApp(role) {
 function handleLogout() {
     currentUser = null;
     document.getElementById("login-password").value = "";
-    document.getElementById("main-app").classList.add("d-none");
-    document.getElementById("login-screen").classList.remove("d-none");
+    
+    // Sembunyikan layar utama dan bersihkan sisa animasinya
+    const mainApp = document.getElementById("main-app");
+    mainApp.classList.add("d-none");
+    mainApp.classList.remove("slide-up-smooth");
+    
+    // Tampilkan kembali layar login dengan efek fade-in yang santai
+    const loginScreen = document.getElementById("login-screen");
+    loginScreen.classList.remove("d-none");
+    loginScreen.classList.add("fade-in-smooth");
 }
 
 function switchMenu(menu) {
