@@ -2,7 +2,7 @@
 // KENDAL.IN - FRONTEND LOGIC ENGINE - V1.2
 // ==========================================
 
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzaqgPLoyh1Sh26JL3vnMb9jmu5BznDw7FSWUyWGTpCyUDWJZMEIJvcoJs2S6D3bh8VFQ/exec"; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwMepznqzjMUq_rVS9iu1JJqGJFMOQPo2_7NTV-Q2uVzLJx-oSuqNO_0S-ZWvZI0xQz_w/exec"; 
 
 let currentUser = null;
 let currentRole = 'pegawai';
@@ -162,13 +162,8 @@ function handleLogin(e) {
 }
 
 function enterApp(role) {
-    // Sembunyikan layar login
     document.getElementById("login-screen").classList.add("d-none");
-    
-    // Panggil layar utama, lalu suntikkan animasi slide-up yang elegan
-    const mainApp = document.getElementById("main-app");
-    mainApp.classList.remove("d-none");
-    mainApp.classList.add("slide-up-smooth");
+    document.getElementById("main-app").classList.remove("d-none");
     
     document.getElementById("user-display-name").textContent = currentUser.nama;
     document.getElementById("user-display-role").textContent = (role === 'pegawai') ? currentUser.sub_bagian : "Operator SPIP Kantor";
@@ -176,12 +171,15 @@ function enterApp(role) {
 
     // --- LOGIKA HAK AKSES MENU (UI) ---
     const btnMonitoring = document.getElementById("menu-monitoring");
+    const btnUserMgmt = document.getElementById("menu-user-management");
 
     if (role === 'operator') {
         if (btnMonitoring) btnMonitoring.classList.remove("d-none");
+        if (btnUserMgmt) btnUserMgmt.classList.remove("d-none"); // Operator bisa kelola pengguna
         switchMenu('monitoring'); 
     } else {
         if (btnMonitoring) btnMonitoring.classList.add("d-none");
+        if (btnUserMgmt) btnUserMgmt.classList.add("d-none"); // Pegawai dilarang keras melihat menu ini
         switchMenu('dashboard'); 
     }
 }
@@ -202,38 +200,37 @@ function handleLogout() {
 }
 
 function switchMenu(menu) {
-    // --- PROTEKSI KEAMANAN (LAPIS KEDUA) ---
-    if (menu === 'monitoring' && currentRole !== 'operator') {
-        alert("Akses Ditolak: Hanya Operator SPIP yang diizinkan mengakses Panel Monitoring.");
-        return; // Hentikan eksekusi, jangan pindah halaman
+    // --- PROTEKSI KEAMANAN TINGKAT TINGGI ---
+    if ((menu === 'monitoring' || menu === 'user-management') && currentRole !== 'operator') {
+        Swal.fire({ icon: 'error', title: 'Akses Ditolak!', text: 'Area steril! Hanya Operator SPIP yang diizinkan masuk.' });
+        return;
     }
 
     activeMenu = menu;
     
-    // Reset status aktif (warna) pada tombol menu sidebar
     const btnDashboard = document.getElementById("menu-dashboard");
     const btnMonitoring = document.getElementById("menu-monitoring");
+    const btnUserMgmt = document.getElementById("menu-user-management");
     
     if (btnDashboard) btnDashboard.classList.remove("active");
     if (btnMonitoring) btnMonitoring.classList.remove("active");
+    if (btnUserMgmt) btnUserMgmt.classList.remove("active");
     
-    // Sembunyikan semua halaman terlebih dahulu
     document.getElementById("view-user-dashboard").classList.add("d-none");
     document.getElementById("view-operator-dashboard").classList.add("d-none");
+    document.getElementById("view-user-management").classList.add("d-none");
 
-    // Tampilkan halaman yang sesuai
     if (menu === 'dashboard') {
         if (btnDashboard) btnDashboard.classList.add("active");
-        
-        // Halaman Dashboard Utama ini bisa diakses oleh Pegawai DAN Operator
         document.getElementById("view-user-dashboard").classList.remove("d-none");
-        
     } else if (menu === 'monitoring') {
         if (btnMonitoring) btnMonitoring.classList.add("active");
-        
-        // Halaman ini khusus Operator (sudah diproteksi di baris paling atas)
         document.getElementById("view-operator-dashboard").classList.remove("d-none");
         loadMonitoringData();
+    } else if (menu === 'user-management') {
+        if (btnUserMgmt) btnUserMgmt.classList.add("active");
+        document.getElementById("view-user-management").classList.remove("d-none");
+        loadUserManagementData(); // Panggil fungsi muat data user
     }
 }
 
@@ -841,3 +838,189 @@ function konfirmasiHapus(idUpload) {
 }
 
 
+// =================================================================
+// ENGINE MANAGEMENT USER (FRONTEND CONTROLLER)
+// =================================================================
+let listUsersAdminGlobal = [];
+
+function loadUserManagementData() {
+    const tbody = document.getElementById("user-table-body");
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-secondary"><div class="spinner-border spinner-border-sm me-2"></div>Sinkronisasi basis data user...</td></tr>`;
+
+    fetch(GAS_API_URL, {
+        method: "POST",
+        mode: "cors",
+        body: JSON.stringify({ action: "get_users_admin" }),
+        headers: { "Content-Type": "text/plain;charset=utf-8" }
+    })
+    .then(res => res.json())
+    .then(resData => {
+        if (resData.status === "success") {
+            listUsersAdminGlobal = resData.data;
+            renderUserManagementTable(listUsersAdminGlobal);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal memuat database pengguna dari cloud server.</td></tr>`;
+    });
+}
+
+function renderUserManagementTable(users) {
+    const tbody = document.getElementById("user-table-body");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if(users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada data pengguna ditemukan.</td></tr>`;
+        return;
+    }
+
+    users.forEach(user => {
+        const row = document.createElement("tr");
+        const badgeRole = user.role === "Admin" ? '<span class="badge bg-dark rounded-2 small">Admin/Operator</span>' : '<span class="badge bg-secondary rounded-2 small">User/Pegawai</span>';
+        const subJabatanText = user.role === "Admin" ? `<strong>${user.jabatan}</strong>` : `<div><strong>${user.sub_bagian}</strong></div><div class="text-secondary small" style="font-size:0.75rem;">${user.jabatan}</div>`;
+
+        row.innerHTML = `
+            <td class="text-secondary fw-semibold">${user.id}</td>
+            <td class="fw-bold text-dark">${user.nama}</td>
+            <td>${badgeRole}</td>
+            <td>${subJabatanText}</td>
+            <td><code class="px-2 py-1 bg-light rounded text-indigo fw-bold">${user.password}</code></td>
+            <td>
+                <div class="d-flex justify-content-center gap-1">
+                    <button class="btn btn-sm btn-light border" onclick="openUserModal('edit', '${user.id}')" title="Edit Akun"><i class="bi bi-pencil-square text-primary"></i></button>
+                    <button class="btn btn-sm btn-light border" onclick="deleteUserAdmin('${user.id}', '${user.role}')" title="Hapus Permanen"><i class="bi bi-trash-fill text-danger"></i></button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function toggleRoleFields() {
+    const role = document.getElementById("user-form-role").value;
+    const extraFields = document.getElementById("user-fields-pegawai");
+    if (role === "Admin") {
+        extraFields.classList.add("d-none");
+        document.getElementById("user-form-sub").required = false;
+    } else {
+        extraFields.classList.remove("d-none");
+        document.getElementById("user-form-sub").required = true;
+    }
+}
+
+function openUserModal(mode, userId = null) {
+    document.getElementById("userForm").reset();
+    document.getElementById("user-form-mode").value = mode;
+    
+    const roleSelect = document.getElementById("user-form-role");
+    roleSelect.disabled = false;
+
+    if (mode === 'add') {
+        document.getElementById("userModalTitle").textContent = "Tambah Akun Baru";
+        document.getElementById("user-form-id").value = "";
+        toggleRoleFields();
+    } else {
+        document.getElementById("userModalTitle").textContent = "Perbarui Data Akun";
+        const selectedUser = listUsersAdminGlobal.find(u => u.id.toString() === userId.toString());
+        if (!selectedUser) return;
+
+        document.getElementById("user-form-id").value = selectedUser.id;
+        roleSelect.value = selectedUser.role;
+        roleSelect.disabled = true; // Kunci role saat edit demi keamanan struktur DB
+        document.getElementById("user-form-nama").value = selectedUser.nama;
+        document.getElementById("user-form-password").value = selectedUser.password;
+        
+        if (selectedUser.role === "User") {
+            document.getElementById("user-form-sub").value = selectedUser.sub_bagian;
+            document.getElementById("user-form-jabatan").value = selectedUser.jabatan;
+        }
+        toggleRoleFields();
+    }
+    const userModal = new bootstrap.Modal(document.getElementById('userModal'));
+    userModal.show();
+}
+
+function submitUserForm(e) {
+    e.preventDefault();
+    const btnSubmit = document.getElementById("btn-submit-user");
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Menyimpan Ke Cloud...";
+
+    const mode = document.getElementById("user-form-mode").value;
+    const payload = {
+        action: mode === 'add' ? 'add_user' : 'edit_user',
+        id: document.getElementById("user-form-id").value,
+        role: document.getElementById("user-form-role").value,
+        nama: document.getElementById("user-form-nama").value,
+        password: document.getElementById("user-form-password").value,
+        sub_bagian: document.getElementById("user-form-sub").value,
+        jabatan: document.getElementById("user-form-jabatan").value || "Staf Teknis"
+    };
+
+    fetch(GAS_API_URL, {
+        method: "POST",
+        mode: "cors",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "text/plain;charset=utf-8" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            Swal.fire({ icon: 'success', title: 'Berhasil!', text: data.message, timer: 2000, showConfirmButton: false });
+            bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+            loadUserManagementData(); // Refresh tabel
+            if(typeof fetchUsersFromServer === "function") fetchUsersFromServer(); // Refresh drop-down login
+        } else {
+            Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+        }
+    })
+    .catch(err => Swal.fire({ icon: 'error', title: 'Error Jaringan', text: err.toString() }))
+    .finally(() => {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Simpan Kredensial";
+    });
+}
+
+function deleteUserAdmin(userId, role) {
+    Swal.fire({
+        title: 'Apakah Peserta Yakin?',
+        text: `Akun dengan ID ${userId} akan dihapus secara permanen dari database Google Sheets!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Hapus Akun!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(GAS_API_URL, {
+                method: "POST",
+                mode: "cors",
+                body: JSON.stringify({ action: "delete_user", id: userId, role: role }),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    Swal.fire({ icon: 'success', title: 'Terhapus!', text: data.message, timer: 1500, showConfirmButton: false });
+                    loadUserManagementData();
+                    if(typeof fetchUsersFromServer === "function") fetchUsersFromServer();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                }
+            });
+        }
+    });
+}
+
+function filterUserTable() {
+    const filter = document.getElementById('search-user').value.toLowerCase();
+    const rows = document.getElementById('user-table-body').getElementsByTagName('tr');
+    for (let i = 0; i < rows.length; i++) {
+        const text = rows[i].textContent || rows[i].innerText;
+        rows[i].style.display = text.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+    }
+}
