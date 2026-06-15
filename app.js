@@ -162,14 +162,24 @@ function handleLogin(e) {
 }
 
 function enterApp(role) {
+    // 1. Sembunyikan layar login
     document.getElementById("login-screen").classList.add("d-none");
-    document.getElementById("main-app").classList.remove("d-none");
     
+    // 2. Panggil layar utama dan suntikkan animasi slide-up
+    const mainApp = document.getElementById("main-app");
+    mainApp.classList.remove("d-none");
+    
+    // Trik reset animasi agar selalu mulus tiap kali login
+    mainApp.classList.remove("slide-up-smooth");
+    void mainApp.offsetWidth; // Trigger reflow
+    mainApp.classList.add("slide-up-smooth");
+    
+    // 3. Isi data profil user di sidebar
     document.getElementById("user-display-name").textContent = currentUser.nama;
     document.getElementById("user-display-role").textContent = (role === 'pegawai') ? currentUser.sub_bagian : "Operator SPIP Kantor";
     document.getElementById("user-initial").textContent = currentUser.nama.charAt(0);
 
-    // --- LOGIKA HAK AKSES MENU (UI) ---
+    // 4. --- LOGIKA HAK AKSES MENU (UI) ---
     const btnMonitoring = document.getElementById("menu-monitoring");
     const btnUserMgmt = document.getElementById("menu-user-management");
 
