@@ -873,7 +873,8 @@ function renderUserManagementTable(users) {
     tbody.innerHTML = "";
 
     if(users.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada data pengguna ditemukan.</td></tr>`;
+        // Colspan diubah jadi 5 karena kolom ID dihilangkan
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">Tidak ada data pengguna ditemukan.</td></tr>`;
         return;
     }
 
@@ -882,12 +883,19 @@ function renderUserManagementTable(users) {
         const badgeRole = user.role === "Admin" ? '<span class="badge bg-dark rounded-2 small">Admin/Operator</span>' : '<span class="badge bg-secondary rounded-2 small">User/Pegawai</span>';
         const subJabatanText = user.role === "Admin" ? `<strong>${user.jabatan}</strong>` : `<div><strong>${user.sub_bagian}</strong></div><div class="text-secondary small" style="font-size:0.75rem;">${user.jabatan}</div>`;
 
+        // Baris ID dihapus, Password dibungkus dengan ****** dan tombol ikon mata
         row.innerHTML = `
-            <td class="text-secondary fw-semibold">${user.id}</td>
             <td class="fw-bold text-dark">${user.nama}</td>
             <td>${badgeRole}</td>
             <td>${subJabatanText}</td>
-            <td><code class="px-2 py-1 bg-light rounded text-indigo fw-bold">${user.password}</code></td>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    <code class="px-2 py-1 bg-light rounded text-indigo fw-bold" id="pwd-${user.id}">******</code>
+                    <button class="btn btn-sm btn-light border p-1" onclick="togglePassword('${user.id}')" title="Lihat/Sembunyikan Password">
+                        <i class="bi bi-eye-fill" id="eye-${user.id}"></i>
+                    </button>
+                </div>
+            </td>
             <td>
                 <div class="d-flex justify-content-center gap-1">
                     <button class="btn btn-sm btn-light border" onclick="openUserModal('edit', '${user.id}')" title="Edit Akun"><i class="bi bi-pencil-square text-primary"></i></button>
@@ -898,6 +906,27 @@ function renderUserManagementTable(users) {
         tbody.appendChild(row);
     });
 }
+
+// --- FUNGSI BARU UNTUK KLIK IKON MATA ---
+function togglePassword(userId) {
+    const pwdElement = document.getElementById(`pwd-${userId}`);
+    const eyeIcon = document.getElementById(`eye-${userId}`);
+    
+    // Tarik data aslinya dari array global yang sudah kita buat sebelumnya
+    const user = listUsersAdminGlobal.find(u => u.id.toString() === userId.toString());
+    if(!user) return;
+
+    if (pwdElement.innerText === "******") {
+        pwdElement.innerText = user.password; // Tampilkan teks asli
+        eyeIcon.classList.remove("bi-eye-fill");
+        eyeIcon.classList.add("bi-eye-slash-fill"); // Ikon mata dicoret
+    } else {
+        pwdElement.innerText = "******"; // Kembalikan ke sensor
+        eyeIcon.classList.remove("bi-eye-slash-fill");
+        eyeIcon.classList.add("bi-eye-fill"); // Ikon mata normal
+    }
+}
+
 
 function toggleRoleFields() {
     const role = document.getElementById("user-form-role").value;
