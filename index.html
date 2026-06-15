@@ -465,6 +465,11 @@
                         <i class="bi bi-collection-play-fill"></i> Monitoring Arsip
                     </a>
                 </li>
+                <li>
+                    <a id="menu-user-management" class="sidebar-link d-none" onclick="switchMenu('user-management')">
+                        <i class="bi bi-people-fill"></i> Manajemen Pengguna
+                    </a>
+                </li>
             </ul>
 
             <div class="sidebar-footer">
@@ -548,18 +553,18 @@
                 </div>
 
                 <div class="table-card">
-<div class="p-3 border-bottom bg-light">
-        <div class="row">
-            <div class="col-md-4 ms-auto">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white border-end-0 text-secondary">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text" id="search-monitoring" class="form-control form-control-custom border-start-0" placeholder="Cari data apa saja..." onkeyup="filterMonitoringTable()">
-                </div>
-            </div>
-        </div>
-    </div>
+                    <div class="p-3 border-bottom bg-light">
+                        <div class="row">
+                            <div class="col-md-4 ms-auto">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-secondary">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" id="search-monitoring" class="form-control form-control-custom border-start-0" placeholder="Cari data apa saja..." onkeyup="filterMonitoringTable()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0" id="monitoring-table">
                             <thead>
@@ -574,6 +579,48 @@
                                 </tr>
                             </thead>
                             <tbody id="monitoring-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="view-user-management" class="view-section d-none">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold tracking-tight mb-1">Manajemen Akses Pengguna</h2>
+                        <p class="text-secondary mb-0">Kelola daftar personel sub-bagian (User) dan operator utama (Admin) secara real-time.</p>
+                    </div>
+                    <button class="btn btn-custom-primary d-flex align-items-center gap-2 shadow-sm py-2 px-3" onclick="openUserModal('add')" style="background-color: var(--accent-color);">
+                        <i class="bi bi-person-plus-fill"></i> Tambah Pengguna baru
+                    </button>
+                </div>
+
+                <div class="table-card">
+                    <div class="p-3 border-bottom bg-light">
+                        <div class="row">
+                            <div class="col-md-4 ms-auto">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-secondary">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" id="search-user" class="form-control form-control-custom border-start-0" placeholder="Cari nama atau jabatan..." onkeyup="filterUserTable()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>Role</th>
+                                    <th>Sub-Bagian / Jabatan</th>
+                                    <th>Password Akses</th>
+                                    <th class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-body">
                                 </tbody>
                         </table>
                     </div>
@@ -661,6 +708,66 @@
         </div>
     </div>
 
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom p-3">
+                <div class="modal-header border-0 pb-2">
+                    <div>
+                        <h4 class="modal-title fw-bold" id="userModalTitle">Tambah Akun Baru</h4>
+                        <p class="text-secondary small mb-0">Konfigurasikan identitas serta hak kredensial masuk aplikasi.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm" onsubmit="submitUserForm(event)">
+                        <input type="hidden" id="user-form-id">
+                        <input type="hidden" id="user-form-mode">
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Tipe Pengguna (Role)</label>
+                            <select id="user-form-role" class="form-select form-select-custom" onchange="toggleRoleFields()" required>
+                                <option value="User" selected>User (Pegawai Sub-Bagian)</option>
+                                <option value="Admin">Admin (Operator SPIP)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Nama Lengkap</label>
+                            <input type="text" id="user-form-nama" class="form-control form-control-custom" placeholder="Ketik nama lengkap..." required>
+                        </div>
+                        
+                        <div id="user-fields-pegawai">
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-medium">Sub-Bagian Kantor</label>
+                                <select id="user-form-sub" class="form-select form-select-custom">
+                                    <option value="Sub-Bagian Partisipasi, Hubungan Masyarakat, dan SDM">Sub-Bagian Partisipasi, Hubungan Masyarakat, dan SDM</option>
+                                    <option value="Sub-Bagian Keuangan, Umum, dan Logistik">Sub-Bagian Keuangan, Umum, dan Logistik</option>
+                                    <option value="Sub-Bagian Perencanaan, Data, dan Informasi">Sub-Bagian Perencanaan, Data, dan Informasi</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-medium">Jabatan Teknis</label>
+                                <input type="text" id="user-form-jabatan" class="form-control form-control-custom" placeholder="Contoh: CPNS / Penata Laporan Keuangan...">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Password Akses Masuk</label>
+                            <input type="text" id="user-form-password" class="form-control form-control-custom" placeholder="Buat kode password unik..." required>
+                        </div>
+
+                        <div class="text-end mt-4 border-0 pt-2">
+                            <button type="button" class="btn btn-light px-4 py-2 me-2 rounded-3" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" id="btn-submit-user" class="btn btn-custom-primary px-4 py-2 rounded-3" style="background-color: var(--sidebar-bg);">
+                                Simpan Kredensial
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="app.js"></script>
