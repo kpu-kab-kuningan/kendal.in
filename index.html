@@ -103,27 +103,27 @@
             transform: translateY(-1px);
         }
 
-/* 1. Kunci tinggi wrapper utama seukuran layar monitor */
-.app-wrapper {
-    display: flex;
-    height: 100vh;      /* Ubah dari min-height menjadi height tetap */
-    width: 100%;
-    overflow: hidden;   /* Mencegah seluruh halaman body ikut ter-scroll */
-}
-
-/* 2. Pastikan Sidebar setinggi layar dan susunannya pas */
-.sidebar {
-    width: 280px;
-    height: 100vh;      /* Paksa setinggi layar monitor */
-    background-color: var(--sidebar-bg);
-    color: #94a3b8;
-    display: flex;
-    flex-direction: column;
-    padding: 2rem 1.5rem;
-    flex-shrink: 0;
-    transition: all 0.3s ease-in-out;
-    overflow-y: auto;   /* Jika resolusi layar kecil, menu di dalam sidebar tetap bisa di-scroll mandiri */
-}
+        /* 1. Kunci tinggi wrapper utama seukuran layar monitor */
+        .app-wrapper {
+            display: flex;
+            height: 100vh;      /* Ubah dari min-height menjadi height tetap */
+            width: 100%;
+            overflow: hidden;   /* Mencegah seluruh halaman body ikut ter-scroll */
+        }
+        
+        /* 2. Pastikan Sidebar setinggi layar dan susunannya pas */
+        .sidebar {
+            width: 280px;
+            height: 100vh;      /* Paksa setinggi layar monitor */
+            background-color: var(--sidebar-bg);
+            color: #94a3b8;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease-in-out;
+            overflow-y: auto;   /* Jika resolusi layar kecil, menu di dalam sidebar tetap bisa di-scroll mandiri */
+        }
 
         .sidebar-brand {
             color: #fff;
@@ -196,15 +196,15 @@
             font-weight: 600;
         }
 
-/* 3. Berikan scrollbar mandiri HANYA untuk Konten Utama */
-.main-content {
-    flex-grow: 1;
-    height: 100vh;      /* Setinggi layar monitor */
-    overflow-y: auto;   /* KUNCINYA DI SINI: Scroll hanya terjadi di area konten saja */
-    padding: 2.5rem;
-    transition: all 0.3s ease-in-out;
-    width: 100%;
-}
+        /* 3. Berikan scrollbar mandiri HANYA untuk Konten Utama */
+        .main-content {
+            flex-grow: 1;
+            height: 100vh;      /* Setinggi layar monitor */
+            overflow-y: auto;   /* KUNCINYA DI SINI: Scroll hanya terjadi di area konten saja */
+            padding: 2.5rem;
+            transition: all 0.3s ease-in-out;
+            width: 100%;
+        }
 
         /* Modern Grid & Cards */
         .category-grid {
@@ -290,15 +290,15 @@
             background-color: #f5f3ff;
         }
 
-/* Modern Status Badge - Diperbarui agar stabil satu baris */
-.badge-modern {
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 0.85rem;
-    white-space: nowrap; /* KUNCI: Mencegah pemotongan baris/enter otomatis */
-    display: inline-block;
-}
+        /* Modern Status Badge - Diperbarui agar stabil satu baris */
+        .badge-modern {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            white-space: nowrap; /* KUNCI: Mencegah pemotongan baris/enter otomatis */
+            display: inline-block;
+        }
         
         .badge-ada { background-color: #dcfce7; color: #15803d; }
         .badge-nihil { background-color: #f1f5f9; color: #475569; }
@@ -377,7 +377,7 @@
 </head>
 <body>
 
-    <div id="login-screen" class="login-container">
+    <div id="login-screen" class="login-container" fade-in-smooth>
         <div class="login-card">
             <div class="text-center mb-4">
                 <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle p-3 mb-3" style="width: 60px; height: 60px;">
