@@ -671,7 +671,14 @@
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label small fw-medium text-secondary">Pilih Komponen Rincian Kartu Kendali</label>
+                                <label class="form-label small fw-medium text-secondary mb-2">Pilih Komponen Rincian Kartu Kendali</label>
+                                
+                                <div class="input-group input-group-sm mb-3 shadow-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-secondary">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" id="search-rincian" class="form-control form-control-custom border-start-0" placeholder="Ketik kata kunci dokumen untuk mencari..." onkeyup="filterRincianList()">
+                                </div>
                                 <div id="modal-rincian-list" style="max-height: 200px; overflow-y: auto; padding-right: 5px;">
                                     </div>
                             </div>
