@@ -376,6 +376,11 @@ function openUploadModal(kategoriId) {
     document.getElementById("form-status-dokumen").value = "Ada";
     document.getElementById("form-file-input").value = "";
     document.getElementById("form-catatan").value = "";
+    
+    // ---> TAMBAHAN BARU: Bersihkan kolom search <---
+    const searchInput = document.getElementById("search-rincian");
+    if (searchInput) searchInput.value = ""; 
+    
     toggleFileRequirement();
 
     // Panggil fungsi render list yang baru
@@ -383,6 +388,29 @@ function openUploadModal(kategoriId) {
 
     const uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
     uploadModal.show();
+}
+
+// --- FUNGSI BARU: FILTER PENCARIAN REALTIME DI DALAM MODAL ---
+function filterRincianList() {
+    const input = document.getElementById('search-rincian');
+    if (!input) return;
+    
+    const filter = input.value.toLowerCase();
+    const container = document.getElementById('modal-rincian-list');
+    if (!container) return;
+    
+    // Ambil semua kotak rincian yang ada di dalam modal
+    const boxes = container.getElementsByClassName('rincian-item-box');
+
+    // Looping setiap kotak, cek apakah teks di dalamnya cocok dengan kata kunci
+    for (let i = 0; i < boxes.length; i++) {
+        const text = boxes[i].textContent || boxes[i].innerText;
+        if (text.toLowerCase().indexOf(filter) > -1) {
+            boxes[i].style.display = ""; // Munculkan jika cocok
+        } else {
+            boxes[i].style.display = "none"; // Sembunyikan jika tidak cocok
+        }
+    }
 }
 
 // 2. FUNGSI BARU: Render List Dinamis dengan Pengecekan Data
