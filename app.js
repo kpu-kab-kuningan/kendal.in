@@ -111,6 +111,33 @@ function fetchRealLogsFromServer() {
 
 // Inisialisasi Tunggal saat halaman dimuat
 document.addEventListener("DOMContentLoaded", () => {
+    
+    // Trigger Animasi Login
+    const loginScreen = document.getElementById("login-screen");
+    if (loginScreen) {
+        loginScreen.classList.remove("fade-in-smooth"); 
+        setTimeout(() => {
+            loginScreen.classList.add("fade-in-smooth");
+        }, 10);
+    }
+
+    // --- FITUR AUTO-LOGIN (MEMORI LOCAL STORAGE) ---
+    const savedUser = localStorage.getItem("kendal_user");
+    const savedRole = localStorage.getItem("kendal_role");
+
+    if (savedUser && savedRole) {
+        currentUser = JSON.parse(savedUser);
+        currentRole = savedRole;
+        
+        // Panggil fungsi enterApp dengan penanda 'true' (artinya ini sedang me-restore sesi lama)
+        enterApp(currentRole, true); 
+        
+        // Kembalikan ke menu terakhir yang sedang dibuka sebelum di-refresh
+        const savedMenu = localStorage.getItem("kendal_menu");
+        if (savedMenu) switchMenu(savedMenu);
+    }
+    // -----------------------------------------------
+
     fetchUsersFromServer(); 
     fetchRealLogsFromServer(); 
     populateLoginDropdown();
@@ -161,7 +188,7 @@ function handleLogin(e) {
     }
 }
 
-function enterApp(role) {
+function enterApp(role, isRestore = false) {
     // 1. Sembunyikan layar login
     document.getElementById("login-screen").classList.add("d-none");
     
@@ -179,6 +206,10 @@ function enterApp(role) {
     document.getElementById("user-display-role").textContent = (role === 'pegawai') ? currentUser.sub_bagian : "Operator SPIP Kantor";
     document.getElementById("user-initial").textContent = currentUser.nama.charAt(0);
 
+    // --- SIMPAN KE BRANKAS LOCAL STORAGE ---
+    localStorage.setItem("kendal_user", JSON.stringify(currentUser));
+    localStorage.setItem("kendal_role", role);
+
     // 4. --- LOGIKA HAK AKSES MENU (UI) ---
     const btnMonitoring = document.getElementById("menu-monitoring");
     const btnUserMgmt = document.getElementById("menu-user-management");
@@ -186,15 +217,22 @@ function enterApp(role) {
     if (role === 'operator') {
         if (btnMonitoring) btnMonitoring.classList.remove("d-none");
         if (btnUserMgmt) btnUserMgmt.classList.remove("d-none"); // Operator bisa kelola pengguna
-        switchMenu('monitoring'); 
+        
+        if (!isRestore) switchMenu('monitoring'); 
     } else {
         if (btnMonitoring) btnMonitoring.classList.add("d-none");
         if (btnUserMgmt) btnUserMgmt.classList.add("d-none"); // Pegawai dilarang keras melihat menu ini
-        switchMenu('dashboard'); 
+        
+        if (!isRestore) switchMenu('dashboard'); 
     }
 }
 
 function handleLogout() {
+    // --- BERSIHKAN BRANKAS LOCAL STORAGE ---
+    localStorage.removeItem("kendal_user");
+    localStorage.removeItem("kendal_role");
+    localStorage.removeItem("kendal_menu");
+
     currentUser = null;
     document.getElementById("login-password").value = "";
     
@@ -215,6 +253,9 @@ function switchMenu(menu) {
         Swal.fire({ icon: 'error', title: 'Akses Ditolak!', text: 'Area steril! Hanya Operator SPIP yang diizinkan masuk.' });
         return;
     }
+
+    // --- TAMBAHAN: SIMPAN MENU AKTIF KE LOCAL STORAGE ---
+    localStorage.setItem("kendal_menu", menu);
 
     activeMenu = menu;
     
