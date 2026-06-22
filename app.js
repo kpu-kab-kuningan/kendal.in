@@ -510,6 +510,19 @@ function submitReportForm(e) {
             });
             return; // Hentikan eksekusi
         }
+        
+        // 2. Validasi Ukuran File (Maksimal 5MB)
+        const maxFileSize = 5 * 1024 * 1024; // 5 MB dikonversi ke Bytes
+        if (fileInput.size > maxFileSize) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Ukuran File Terlalu Besar!',
+                text: 'Batas maksimal unggahan adalah 5 MB. Silakan kompres (perkecil) PDF Anda terlebih dahulu agar sistem tidak kewalahan.',
+                confirmButtonColor: '#f59e0b', // Warna kuning/orange peringatan
+                confirmButtonText: '<i class="bi bi-file-earmark-zip-fill me-1"></i> Saya Mengerti'
+            });
+            return; // Hentikan eksekusi
+        }
     }
     // ------------------------------------   
 
