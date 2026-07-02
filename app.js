@@ -245,7 +245,13 @@ function enterApp(role, isRestore = false) {
 
     if (role === 'operator') {
         if (btnMonitoring) btnMonitoring.classList.remove("d-none");
-        if (btnUserMgmt) btnUserMgmt.classList.remove("d-none"); // Operator bisa kelola pengguna
+        
+        // Cek jika dia viewer, sembunyikan menu manajemen user
+        if (currentUser.role === 'viewer') {
+             if (btnUserMgmt) btnUserMgmt.classList.add("d-none");
+        } else {
+             if (btnUserMgmt) btnUserMgmt.classList.remove("d-none");
+        }
         
         if (!isRestore) switchMenu('monitoring'); 
     } else {
@@ -782,22 +788,32 @@ if (matchLog.status_laporan === 'Ada') {
 }
 
 // 4. Masukkan btnMataHtml ke dalam kerangka cellAksi utama
-cellAksi = `
-    <div class="d-flex justify-content-center gap-1">
-        
-        ${btnMataHtml}
-        
-        ${matchLog.status_acc !== 'Disetujui' ? `
-        <button class="btn btn-sm btn-light border" onclick="updateAccStatus('${matchLog.id_upload}', 'Disetujui')" title="Setujui">
-            <i class="bi bi-check-lg text-success"></i>
-        </button>
-        ` : ''}
+// LOGIKA BARU: Cek role currentUser, jika viewer HANYA tampilkan tombol mata
+if (currentUser.role === 'viewer') {
+    cellAksi = `
+        <div class="d-flex justify-content-center gap-1">
+            ${btnMataHtml}
+        </div>
+    `;
+} else {
+    // Tampilan Normal untuk Operator (Bisa Setujui & Hapus)
+    cellAksi = `
+        <div class="d-flex justify-content-center gap-1">
+            
+            ${btnMataHtml}
+            
+            ${matchLog.status_acc !== 'Disetujui' ? `
+            <button class="btn btn-sm btn-light border" onclick="updateAccStatus('${matchLog.id_upload}', 'Disetujui')" title="Setujui">
+                <i class="bi bi-check-lg text-success"></i>
+            </button>
+            ` : ''}
 
-        <button class="btn btn-sm btn-light border" onclick="konfirmasiHapus('${matchLog.id_upload}')" title="Hapus Berkas">
-            <i class="bi bi-trash text-danger"></i>
-        </button>
-    </div>
-`;
+            <button class="btn btn-sm btn-light border" onclick="konfirmasiHapus('${matchLog.id_upload}')" title="Hapus Berkas">
+                <i class="bi bi-trash text-danger"></i>
+            </button>
+        </div>
+    `;
+}
 
         }
 
