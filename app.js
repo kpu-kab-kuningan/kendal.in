@@ -2,7 +2,7 @@
 // KENDAL.IN - FRONTEND LOGIC ENGINE - V1.2
 // ==========================================
 
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz7FGrunWQfrEG7sCbyaCPHQQm6gg8rp5SnG30v_QYUaRHE3vD9rMX3nT-bUpzQ5HiX2A/exec"; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbydB1f-R5LCEpYFHrdXr0c2QHNsDC4lQ-HR_x3u6Ww_cXq9-K4QGB-lc-snVQugFzmYKw/exec"; 
 
 let currentUser = null;
 let currentRole = 'pegawai';
@@ -189,12 +189,33 @@ function handleLogin(e) {
         // Cocokkan password yang diketik dengan password dari Google Sheets
         if (admin && passwordIn === admin.password) { 
             currentUser = admin;
-            enterApp('operator');
+            
+            // --- LOGIKA BARU UNTUK VIEWER ---
+            // Cek apakah ID diawali dengan huruf "V"
+            if (String(admin.id).startsWith("V")) {
+                currentUser.role = "viewer"; // Tambahkan status role sebagai viewer
+                enterApp('operator'); // Tetap masuk menggunakan alur UI operator
+                
+                // CATATAN: Di bawah ini adalah contoh logika untuk menyembunyikan menu.
+                // Silakan sesuaikan ID elemen ('menu-input-arsip', dll) dengan yang ada di file HTML/JS Peserta.
+                // document.getElementById('menu-input-arsip').style.display = 'none';
+                // document.getElementById('menu-manajemen').style.display = 'none';
+                
+                // Arahkan langsung ke halaman monitoring (sesuaikan nama fungsinya)
+                // showMenu('monitoring'); 
+                
+            } else {
+                currentUser.role = "operator"; // Status sebagai operator biasa
+                enterApp('operator');
+            }
+            // ---------------------------------
+
         } else {
             alert("Password Operator salah!");
         }
     }
 }
+
 
 function enterApp(role, isRestore = false) {
     // 1. Sembunyikan layar login
