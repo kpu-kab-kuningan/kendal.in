@@ -2,7 +2,7 @@
 // KENDAL.IN - FRONTEND LOGIC ENGINE - V1.2
 // ==========================================
 
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwMepznqzjMUq_rVS9iu1JJqGJFMOQPo2_7NTV-Q2uVzLJx-oSuqNO_0S-ZWvZI0xQz_w/exec"; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz7FGrunWQfrEG7sCbyaCPHQQm6gg8rp5SnG30v_QYUaRHE3vD9rMX3nT-bUpzQ5HiX2A/exec"; 
 
 let currentUser = null;
 let currentRole = 'pegawai';
@@ -172,15 +172,23 @@ function handleLogin(e) {
     if (!idSelected) return alert("Silakan pilih nama terlebih dahulu!");
 
     if (currentRole === 'pegawai') {
-        if (passwordIn === "657139") { 
-            currentUser = MOCK_PEGAWAI.find(p => p.id === idSelected);
+        // Cari data pegawai berdasarkan ID yang dipilih
+        const user = MOCK_PEGAWAI.find(p => p.id === idSelected);
+        
+        // Cocokkan password yang diketik dengan password dari Google Sheets
+        if (user && passwordIn === user.password) { 
+            currentUser = user;
             enterApp('pegawai');
         } else {
             alert("Password Sub-Bagian salah!");
         }
     } else {
-        if (passwordIn === "admin657139") { 
-            currentUser = MOCK_OPERATOR.find(o => o.id === idSelected);
+        // Cari data operator berdasarkan ID yang dipilih
+        const admin = MOCK_OPERATOR.find(o => o.id === idSelected);
+        
+        // Cocokkan password yang diketik dengan password dari Google Sheets
+        if (admin && passwordIn === admin.password) { 
+            currentUser = admin;
             enterApp('operator');
         } else {
             alert("Password Operator salah!");
