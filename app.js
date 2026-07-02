@@ -232,7 +232,19 @@ function enterApp(role, isRestore = false) {
     
     // 3. Isi data profil user di sidebar
     document.getElementById("user-display-name").textContent = currentUser.nama;
-    document.getElementById("user-display-role").textContent = (role === 'pegawai') ? currentUser.sub_bagian : "Operator SPIP Kantor";
+    
+    // --- LOGIKA BARU UNTUK NAMA JABATAN (KOMISIONER / OPERATOR / PEGAWAI) ---
+    let teksJabatan = "";
+    if (role === 'pegawai') {
+        teksJabatan = currentUser.sub_bagian;
+    } else if (currentUser.role === 'viewer') {
+        teksJabatan = "Komisioner"; // Akan muncul ini untuk akun V001 dst
+    } else {
+        teksJabatan = "Operator SPIP Kantor";
+    }
+    document.getElementById("user-display-role").textContent = teksJabatan;
+    // -----------------------------------------------------------------------
+
     document.getElementById("user-initial").textContent = currentUser.nama.charAt(0);
 
     // --- SIMPAN KE BRANKAS LOCAL STORAGE ---
@@ -240,23 +252,29 @@ function enterApp(role, isRestore = false) {
     localStorage.setItem("kendal_role", role);
 
     // 4. --- LOGIKA HAK AKSES MENU (UI) ---
+    const btnDashboard = document.getElementById("menu-dashboard"); // Tarik elemen menu dashboard
     const btnMonitoring = document.getElementById("menu-monitoring");
     const btnUserMgmt = document.getElementById("menu-user-management");
 
     if (role === 'operator') {
         if (btnMonitoring) btnMonitoring.classList.remove("d-none");
         
-        // Cek jika dia viewer, sembunyikan menu manajemen user
+        // Cek jika dia viewer (Komisioner), sembunyikan yang tidak perlu
         if (currentUser.role === 'viewer') {
              if (btnUserMgmt) btnUserMgmt.classList.add("d-none");
+             if (btnDashboard) btnDashboard.classList.add("d-none"); // <-- Sembunyikan Dashboard Utama
         } else {
+             // Jika Operator asli, tampilkan semuanya
              if (btnUserMgmt) btnUserMgmt.classList.remove("d-none");
+             if (btnDashboard) btnDashboard.classList.remove("d-none");
         }
         
         if (!isRestore) switchMenu('monitoring'); 
     } else {
+        // Logika untuk pegawai (Sub-bagian)
         if (btnMonitoring) btnMonitoring.classList.add("d-none");
-        if (btnUserMgmt) btnUserMgmt.classList.add("d-none"); // Pegawai dilarang keras melihat menu ini
+        if (btnUserMgmt) btnUserMgmt.classList.add("d-none"); 
+        if (btnDashboard) btnDashboard.classList.remove("d-none"); // Pegawai butuh dashboard
         
         if (!isRestore) switchMenu('dashboard'); 
     }
